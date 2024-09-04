@@ -103,6 +103,10 @@ def animate_eye(frames, random_start_points, num_frames, frame_height, frame_wid
     # Set initial frame index for the main loop
     frame_indices = [[start for start in row] for row in random_start_points]
 
+    # Variables to track the last known position
+    last_move_x = 0
+    last_move_y = 0
+
     while True:
         # Create an empty canvas for the composite foreground frame
         composite_fg_frame = np.zeros((composite_fg_height, composite_fg_width, 4), dtype=np.uint8)
@@ -132,9 +136,14 @@ def animate_eye(frames, random_start_points, num_frames, frame_height, frame_wid
                 move_x = int((0.5 - relative_x_position) * MOVEMENT_SCALE * frame_width)
                 move_y = int((relative_y_position - 0.5) * MOVEMENT_SCALE * frame_height) if enable_y_coords else 0
 
+                # Update the last known positions
+                last_move_x = move_x
+                last_move_y = move_y
+
             else:
-                move_x = 0  # Keep the background centered if no face is detected
-                move_y = 0
+                # Use the last known position if no face is detected
+                move_x = last_move_x
+                move_y = last_move_y
 
         # Handle overflow and fill gaps with black
         if composite_fg_frame.shape[2] == 4:  # Check if the image has an alpha channel
