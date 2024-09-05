@@ -176,7 +176,7 @@ def animate_eye(all_frames, random_start_points, num_frames, frame_height, frame
             bgr, alpha = composite_fg_frame[:, :, :3], composite_fg_frame[:, :, 3]
 
             # Create an empty canvas (all black) for the final image
-            centered_background = np.zeros((composite_fg_height, composite_fg_width, 3), dtype=np.uint8)
+            centered_background = np.ones((composite_fg_height, composite_fg_width, 3), dtype=np.uint8) * 255
 
             # Calculate where the background should be placed
             bg_x = move_x
