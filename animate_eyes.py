@@ -226,7 +226,6 @@ def animate_eye(all_frames, random_start_points, num_frames, frame_height, frame
 
 
 if __name__ == "__main__":
-
     # Precompute the composite frames with random start points for each grid cell
     frames, random_start_points, num_frames, frame_height, frame_width = precompute_composite_frames(image_directories=["cropped_eyes", "cropped_eyes_2"])
 
@@ -234,8 +233,12 @@ if __name__ == "__main__":
     face_detection_thread = threading.Thread(target=detect_face_position)
     face_detection_thread.start()
 
+    # Set up fullscreen window
+    cv2.namedWindow('Animated Eye Grid', cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty('Animated Eye Grid', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     # Run the animation with precomputed frames, enabling y-axis tracking
     animate_eye(frames, random_start_points, num_frames, frame_height, frame_width,
-                background_image_path="eyeball.png", enable_y_coords=True, debug=True)
+                background_image_path="eyeball.png", enable_y_coords=True, debug=False)
 
     face_detection_thread.join()
