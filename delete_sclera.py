@@ -40,7 +40,7 @@ def delete_sclera_from_video(path_to_eye_video, output_directory):
         return contour
 
     # Function to remove the eye region (replace with transparency) with feathered edges
-    def remove_eye_region(frame, landmarks, width, height, feather_radius=4):  # Increased feather radius
+    def remove_eye_region(frame, landmarks, width, height, feather_radius=3):  # Increased feather radius
         left_eye_indices = [173, 157, 158, 159, 160, 161, 246, 163, 144, 145, 153, 154, 155]
         right_eye_indices = [398, 384, 385, 386, 387, 388, 466, 263, 249, 390, 373, 374, 380]
 
@@ -102,5 +102,5 @@ def delete_sclera_from_video(path_to_eye_video, output_directory):
 
 if __name__ == "__main__":
 
-    delete_sclera_from_video(path_to_eye_video="cam_face.mp4",
-                             output_directory="eye_no_sclera")
+    delete_sclera_from_video(path_to_eye_video="cam_face_bak.mp4",
+                             output_directory="eye_no_sclera_2")

@@ -80,7 +80,7 @@ def create_composite_image(image, grid_size):
     composite_image = np.tile(image, (grid_size, grid_size, 1))
     return composite_image
 
-def animate_eye(frames, random_start_points, num_frames, frame_height, frame_width, background_image_path, enable_y_coords=False):
+def animate_eye(frames, random_start_points, num_frames, frame_height, frame_width, background_image_path, enable_y_coords=False, debug=False):
     global face_x_coordinate, face_y_coordinate, latest_webcam_frame
 
     # Load the background image
@@ -192,7 +192,7 @@ def animate_eye(frames, random_start_points, num_frames, frame_height, frame_wid
 
         # Display the debug frame with bounding box (directly from the shared variable)
         with frame_lock:
-            if latest_webcam_frame is not None:
+            if debug and (latest_webcam_frame is not None):
                 cv2.imshow('Debug Face Detection', latest_webcam_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Ensure minimal delay between frames
@@ -203,7 +203,7 @@ def animate_eye(frames, random_start_points, num_frames, frame_height, frame_wid
 if __name__ == "__main__":
 
     # Precompute the composite frames with random start points for each grid cell
-    frames, random_start_points, num_frames, frame_height, frame_width = precompute_composite_frames("cropped_eyes")
+    frames, random_start_points, num_frames, frame_height, frame_width = precompute_composite_frames("cropped_eyes_2")
 
     # Start the threads for face detection
     face_detection_thread = threading.Thread(target=detect_face_position)
@@ -211,6 +211,6 @@ if __name__ == "__main__":
 
     # Run the animation with precomputed frames, enabling y-axis tracking
     animate_eye(frames, random_start_points, num_frames, frame_height, frame_width,
-                background_image_path="eyeball.png", enable_y_coords=True)
+                background_image_path="eyeball.png", enable_y_coords=True, debug=False)
 
     face_detection_thread.join()

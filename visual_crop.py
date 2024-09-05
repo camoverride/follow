@@ -74,5 +74,5 @@ def visual_crop(input_directory, output_directory):
 
 
 if __name__ == "__main__":
-    visual_crop(input_directory="eye_no_sclera",
-                output_directory="cropped_eyes")
+    visual_crop(input_directory="eye_no_sclera_2",
+                output_directory="cropped_eyes_2")
