@@ -3,6 +3,7 @@ attrs==24.2.0
 cffi==1.17.0
 contourpy==1.2.1
 cycler==0.12.1
+Cython==3.0.11
 flatbuffers==24.3.25
 fonttools==4.53.1
 imageio==2.35.1
@@ -20,8 +21,11 @@ packaging==24.1
 pillow==10.4.0
 protobuf==4.25.4
 pycparser==2.22
+pyobjc-core==10.3.1
+pyobjc-framework-Cocoa==10.3.1
 pyparsing==3.1.4
 python-dateutil==2.9.0.post0
 scipy==1.14.1
+screeninfo==0.8.1
 six==1.16.0
 sounddevice==0.5.0

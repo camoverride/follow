@@ -4,6 +4,7 @@ import numpy as np
 import mediapipe as mp
 import threading
 import random
+from screeninfo import get_monitors
 
 # Global variables
 face_x_coordinate = None
@@ -55,6 +56,12 @@ def detect_face_position():
 
     cap.release()
 
+
+def get_screen_resolution():
+    """Get the resolution of the primary monitor."""
+    monitor = get_monitors()[0]
+    return monitor.width, monitor.height
+
 def precompute_composite_frames(image_directories):
     """Precompute all composite frames by resizing images from multiple directories to fullscreen dimensions."""
     
@@ -66,9 +73,8 @@ def precompute_composite_frames(image_directories):
         print("No images found in the first directory.")
         return []
 
-    # Get the screen size
-    screen_width = cv2.getWindowImageRect('Animated Eye Grid')[2]
-    screen_height = cv2.getWindowImageRect('Animated Eye Grid')[3]
+    # Get the screen resolution using screeninfo
+    screen_width, screen_height = get_screen_resolution()
 
     # Load all frames from the first directory
     first_dir_frames = [cv2.imread(os.path.join(first_dir, image_file), cv2.IMREAD_UNCHANGED) for image_file in first_dir_image_files]
