@@ -236,6 +236,6 @@ if __name__ == "__main__":
 
     # Run the animation with precomputed frames, enabling y-axis tracking
     animate_eye(frames, random_start_points, num_frames, frame_height, frame_width,
-                background_image_path="eyeball.png", enable_y_coords=True, debug=False)
+                background_image_path="eyeball.png", enable_y_coords=True, debug=True)
 
     face_detection_thread.join()
