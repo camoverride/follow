@@ -56,8 +56,7 @@ def detect_face_position():
     cap.release()
 
 def precompute_composite_frames(image_directories):
-    """Precompute all composite frames by resizing images from multiple directories to match the size of the images
-       in the first directory and limiting to the number of images in the first directory."""
+    """Precompute all composite frames by resizing images from multiple directories to fullscreen dimensions."""
     
     # Load images from the first directory
     first_dir = image_directories[0]
@@ -67,26 +66,29 @@ def precompute_composite_frames(image_directories):
         print("No images found in the first directory.")
         return []
 
+    # Get the screen size
+    screen_width = cv2.getWindowImageRect('Animated Eye Grid')[2]
+    screen_height = cv2.getWindowImageRect('Animated Eye Grid')[3]
+
     # Load all frames from the first directory
     first_dir_frames = [cv2.imread(os.path.join(first_dir, image_file), cv2.IMREAD_UNCHANGED) for image_file in first_dir_image_files]
     num_frames = len(first_dir_frames)
-    frame_height, frame_width = first_dir_frames[0].shape[:2]
 
     # Initialize a list to hold all resized frames from all directories
     all_frames = []
 
-    # Resize images from all directories to match the size of the first directory's images
+    # Resize images from all directories to match the screen size
     for image_dir in image_directories:
         image_files = sorted([f for f in os.listdir(image_dir) if f.endswith(('png', 'jpg', 'jpeg'))])
 
         # Limit the number of images to the number of images in the first directory
         limited_image_files = image_files[:num_frames]
 
-        # Load and resize images
+        # Load and resize images to fullscreen
         resized_frames = []
         for image_file in limited_image_files:
             image = cv2.imread(os.path.join(image_dir, image_file), cv2.IMREAD_UNCHANGED)
-            resized_image = cv2.resize(image, (frame_width, frame_height), interpolation=cv2.INTER_AREA)
+            resized_image = cv2.resize(image, (screen_width, screen_height), interpolation=cv2.INTER_AREA)
             resized_frames.append(resized_image)
 
         all_frames.append(resized_frames)
@@ -94,7 +96,7 @@ def precompute_composite_frames(image_directories):
     # Initialize random starting points for each cell in the 5x5 grid
     random_start_points = [[random.randint(0, num_frames - 1) for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 
-    return all_frames, random_start_points, num_frames, frame_height, frame_width
+    return all_frames, random_start_points, num_frames, screen_height, screen_width
 
 def create_composite_image(image, grid_size):
     """Create a composite image by tiling the input image into a grid."""
