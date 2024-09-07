@@ -26,7 +26,8 @@ TODO: add info about system d
 
 ## TODO:
 
-- set screen size
-- experient with image size, number of images, etc
-- test on Pi 4B
+- get better eye video
+- get better eyeball
+- install on Pi 5
+- two eye version
 - change model to YOLO (or other object detection algo) running on TPU
