@@ -18,7 +18,7 @@ frame_lock = threading.Lock()
 MOVEMENT_SCALE = 0.8  # Scale factor to exaggerate the background movement
 
 
-def detect_face_position(debug=True):
+def detect_face_position(debug):
     """
     Set the (x, y) coordinates of the face in order to perform tracking.
 
@@ -118,7 +118,7 @@ def images_to_memmap(image_dir, memmap_filename='images_memmap.dat'):
     return memmap_path, num_frames, frame_width, frame_height
 
 
-def animate_eye(memmap_path, num_frames, frame_height, frame_width, background_image_path, enable_y_coords=False, debug=False):
+def animate_eye(memmap_path, num_frames, frame_height, frame_width, background_image_path, enable_y_coords, debug):
     global face_x_coordinate, face_y_coordinate, latest_webcam_frame
 
     # Load the memmap from disk
@@ -243,7 +243,11 @@ if __name__ == "__main__":
     cv2.setWindowProperty('Animated Eye', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # Run the animation.
-    animate_eye(memmap_path, num_frames, frame_height, frame_width,
-                background_image_path="eyeball.png", enable_y_coords=True, debug=True)
+    animate_eye(memmap_path, num_frames,
+                frame_height,
+                frame_width,
+                background_image_path="eyeball.png",
+                enable_y_coords=True,
+                debug=True)
 
     face_detection_thread.join()
