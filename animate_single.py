@@ -221,6 +221,8 @@ def animate_eye(memmap_path, num_frames, frame_height, frame_width, background_i
         with frame_lock:
             if debug and (latest_webcam_frame is not None):
                 cv2.imshow('Debug Face Detection', latest_webcam_frame)
+                # Bring the debug window to the front (Linux with wmctrl)
+                os.system('wmctrl -r "Debug Face Detection" -b add,above')
 
         if cv2.waitKey(1) & 0xFF == ord('q'):  # Ensure minimal delay between frames
             cv2.destroyAllWindows()
