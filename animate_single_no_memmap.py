@@ -174,12 +174,9 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
             return
 
 
+
 if __name__ == "__main__":
     os.system("unclutter -idle 0 &")
-
-    # Set up fullscreen window
-    cv2.namedWindow('Animated Eye', cv2.WND_PROP_FULLSCREEN)
-    cv2.setWindowProperty('Animated Eye', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # Load images and resize them to a smaller size beforehand
     original_images = load_images(image_dir="cropped_eyes_2_resized")
@@ -191,6 +188,10 @@ if __name__ == "__main__":
     # Start the face detection thread
     face_detection_thread = threading.Thread(target=detect_face_position, args=(False,))
     face_detection_thread.start()
+
+    # Set up the OpenCV window for fullscreen
+    cv2.namedWindow('Animated Eye', cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty('Animated Eye', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # Run the animation
     animate_eye(resized_images, num_frames, frame_height, frame_width, background_image_path="eyeball.png", enable_y_coords=True, debug=False)
