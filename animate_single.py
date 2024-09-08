@@ -75,19 +75,20 @@ def detect_face_position(debug=False):
     cap.release()
 
 
-def sort_key(file_name):
-    # Extract numbers from the filename for proper sorting
-    return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', file_name)]
-
+def natural_sort_key(s):
+    # Sort filenames that contain numbers in a "natural" way (e.g., file1, file2, file10)
+    return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', s)]
 
 def images_to_memmap(image_dir, memmap_filename='images_memmap.dat'):
     """
     Takes a directory containing images and writes them all to a memmap for fast I/O
     Returns memmap_path, num_frames, frame_width, frame_height
     """
-    # Get all image paths in the directory, sorted by filename to preserve the correct order
-    image_paths = sorted([os.path.join(image_dir, fname) for fname in os.listdir(image_dir) if fname.endswith(('png', 'jpg', 'jpeg'))])
-    image_paths = sorted(image_paths, key=sort_key)
+    # Get all image paths in the directory
+    image_paths = [os.path.join(image_dir, fname) for fname in os.listdir(image_dir) if fname.endswith(('png', 'jpg', 'jpeg'))]
+    
+    # Sort images by natural order (handles numeric filenames correctly)
+    image_paths = sorted(image_paths, key=natural_sort_key)
 
     if not image_paths:
         raise ValueError("No images found in the specified directory.")
@@ -241,6 +242,6 @@ if __name__ == "__main__":
 
     # Run the animation.
     animate_eye(memmap_path, num_frames, frame_height, frame_width,
-                background_image_path="eyeball.png", enable_y_coords=True, debug=False)
+                background_image_path="eyeball.png", enable_y_coords=True, debug=True)
 
     face_detection_thread.join()
