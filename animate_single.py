@@ -235,7 +235,7 @@ if __name__ == "__main__":
     memmap_path, num_frames, frame_width, frame_height = images_to_memmap(image_dir="cropped_eyes_2")
 
     # Start the threads for face detection
-    face_detection_thread = threading.Thread(target=detect_face_position)
+    face_detection_thread = threading.Thread(target=detect_face_position, args=(False,)) # debug=False
     face_detection_thread.start()
 
     # Set up fullscreen window
