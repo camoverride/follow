@@ -177,6 +177,10 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
 if __name__ == "__main__":
     os.system("unclutter -idle 0 &")
 
+    # Set up fullscreen window
+    cv2.namedWindow('Animated Eye', cv2.WND_PROP_FULLSCREEN)
+    cv2.setWindowProperty('Animated Eye', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+
     # Load images and resize them to a smaller size beforehand
     original_images = load_images(image_dir="cropped_eyes_2_resized")
     resized_images = resize_images(original_images, new_width=1920, new_height=1200)  # Adjust to the desired size
