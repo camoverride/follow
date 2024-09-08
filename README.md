@@ -30,4 +30,5 @@ TODO: add info about system d
 - get better eyeball
 - install on Pi 5
 - two eye version
+- if slow or glitchy: pi5 can handle lots of things in memory, so remove memmap portion
 - change model to YOLO (or other object detection algo) running on TPU

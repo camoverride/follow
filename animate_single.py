@@ -3,7 +3,7 @@ import os
 import numpy as np
 import mediapipe as mp
 import threading
-from PIL import Image
+import re
 
 
 
@@ -75,6 +75,11 @@ def detect_face_position(debug=False):
     cap.release()
 
 
+def sort_key(file_name):
+    # Extract numbers from the filename for proper sorting
+    return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', file_name)]
+
+
 def images_to_memmap(image_dir, memmap_filename='images_memmap.dat'):
     """
     Takes a directory containing images and writes them all to a memmap for fast I/O
@@ -82,6 +87,7 @@ def images_to_memmap(image_dir, memmap_filename='images_memmap.dat'):
     """
     # Get all image paths in the directory, sorted by filename to preserve the correct order
     image_paths = sorted([os.path.join(image_dir, fname) for fname in os.listdir(image_dir) if fname.endswith(('png', 'jpg', 'jpeg'))])
+    image_paths = sorted(image_paths, key=sort_key)
 
     if not image_paths:
         raise ValueError("No images found in the specified directory.")
