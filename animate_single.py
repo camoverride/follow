@@ -230,9 +230,13 @@ def animate_eye(memmap_path, num_frames, frame_height, frame_width, background_i
 
 
 if __name__ == "__main__":
+    # Hide the mouse
+    os.system("unclutter -idle 0 &")
+
     # Generate the memmap.
     # TODO: this can be pre-computed.
-    memmap_path, num_frames, frame_width, frame_height = images_to_memmap(image_dir="cropped_eyes_2")
+    # TODO: this seems to be random on the pi???
+    memmap_path, num_frames, frame_width, frame_height = images_to_memmap(image_dir="cropped_eyes_2_resized")
 
     # Start the threads for face detection
     face_detection_thread = threading.Thread(target=detect_face_position, args=(False,)) # debug=False
