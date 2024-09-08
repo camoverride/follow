@@ -117,7 +117,7 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
     # Load the background image
     background_img = cv2.imread(background_image_path, cv2.IMREAD_UNCHANGED)
 
-    # Resize the background image to match the frame dimensions
+    # Resize the background image ONCE to match the frame dimensions
     background_img = cv2.resize(background_img, (frame_width, frame_height), interpolation=cv2.INTER_AREA)
 
     # If the background has an alpha channel, convert it to BGR
@@ -151,24 +151,18 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
                 # Update the last known positions
                 last_move_x = move_x
                 last_move_y = move_y
-
             else:
                 # Use the last known position if no face is detected
                 move_x = last_move_x
                 move_y = last_move_y
 
-        # Create an empty canvas for the foreground frame
-        composite_fg_frame = np.zeros((frame_height, frame_width, 4), dtype=np.uint8)
+        # If the current frame has an alpha channel (4 channels), blend with the background
+        if current_frame.shape[2] == 4:
+            # Separate BGR and Alpha channels
+            bgr = current_frame[:, :, :3]
+            alpha = current_frame[:, :, 3] / 255.0  # Normalize alpha to 0-1
 
-        # Place the current frame in the foreground frame
-        composite_fg_frame[:frame_height, :frame_width] = current_frame
-
-        # Handle overflow and fill gaps with black
-        if composite_fg_frame.shape[2] == 4:  # Check if the image has an alpha channel
-            # Separate the BGR and Alpha channels
-            bgr, alpha = composite_fg_frame[:, :, :3], composite_fg_frame[:, :, 3]
-
-            # Create an empty canvas (all black) for the final image
+            # Create an empty canvas (white background) for the final image
             centered_background = np.ones((frame_height, frame_width, 3), dtype=np.uint8) * 255
 
             # Calculate valid region based on movement and clip if needed
@@ -190,7 +184,7 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
                     src_x_start:src_x_start + (dst_x_end - dst_x_start)
                 ]
 
-            # Ensure the alpha and bgr regions match in size before blending
+            # Ensure the alpha and BGR regions match in size before blending
             min_height = min(centered_background.shape[0], bgr.shape[0])
             min_width = min(centered_background.shape[1], bgr.shape[1])
 
@@ -198,11 +192,11 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
             bgr = bgr[:min_height, :min_width]
             alpha = alpha[:min_height, :min_width]
 
-            # Blend the frame with the background using the alpha channel
-            alpha = alpha / 255.0  # Normalize alpha to 0-1
+            # Perform the alpha blending
             frame_with_bg = (alpha[..., None] * bgr + (1 - alpha[..., None]) * centered_background).astype(np.uint8)
         else:
-            frame_with_bg = composite_fg_frame  # No alpha channel, just display the frame
+            # If no alpha channel, just use the current frame
+            frame_with_bg = current_frame[:, :, :3]
 
         # Display the main animated eye frame
         cv2.imshow('Animated Eye', frame_with_bg)
@@ -214,9 +208,10 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
                 # Bring the debug window to the front (Linux with wmctrl)
                 os.system('wmctrl -r "Debug Face Detection" -b add,above')
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # Ensure minimal delay between frames
+        if cv2.waitKey(10) & 0xFF == ord('q'):  # Small delay to reduce CPU load and allow smoother display
             cv2.destroyAllWindows()
             return
+
 
 
 if __name__ == "__main__":
