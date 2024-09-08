@@ -179,10 +179,10 @@ if __name__ == "__main__":
 
     # Load images and resize them to a smaller size beforehand
     original_images = load_images(image_dir="cropped_eyes_2_resized")
-    resized_images = resize_images(original_images, new_width=640, new_height=480)  # Adjust to the desired size
+    resized_images = resize_images(original_images, new_width=1280, new_height=960)  # Adjust to the desired size
 
     num_frames = len(resized_images)
-    frame_height, frame_width = 480, 640  # Match the resized dimensions
+    frame_height, frame_width = 960, 1280  # Match the resized dimensions
 
     # Start the face detection thread
     face_detection_thread = threading.Thread(target=detect_face_position, args=(False,))
