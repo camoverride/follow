@@ -1,14 +1,13 @@
 import cv2
 import os
 import numpy as np
-import mediapipe as mp
 import threading
 import re
 
 # Global variables
-face_x_coordinate = None
-face_y_coordinate = None
-face_x_lock = threading.Lock()
+motion_x_coordinate = None
+motion_y_coordinate = None
+motion_lock = threading.Lock()
 latest_webcam_frame = None
 frame_lock = threading.Lock()
 
@@ -23,43 +22,61 @@ def natural_sort_key(s):
     return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', s)]
 
 
-
-def detect_face_position(debug):
+def detect_motion_position(debug=False, threshold=25):
     """
-    Set the (x, y) coordinates of the face in order to perform tracking.
+    Detect meaningful motion in the webcam feed and track its (x, y) position.
     """
-    global face_x_coordinate, face_y_coordinate, latest_webcam_frame
-
-    mp_face_detection = mp.solutions.face_detection
-    face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+    global motion_x_coordinate, motion_y_coordinate, latest_webcam_frame
 
     cap = cv2.VideoCapture(0)
+
+    # Use the first frame as the background for comparison
+    ret, first_frame = cap.read()
+    if not ret:
+        return
+
+    # Convert the first frame to grayscale and blur it to reduce noise
+    first_frame_gray = cv2.cvtColor(first_frame, cv2.COLOR_BGR2GRAY)
+    first_frame_gray = cv2.GaussianBlur(first_frame_gray, (21, 21), 0)
 
     while True:
         ret, webcam_frame = cap.read()
         if not ret:
             break
 
-        # Perform face detection
-        webcam_frame_rgb = cv2.cvtColor(webcam_frame, cv2.COLOR_BGR2RGB)
-        results = face_detection.process(webcam_frame_rgb)
+        # Convert the current frame to grayscale and blur it
+        current_frame_gray = cv2.cvtColor(webcam_frame, cv2.COLOR_BGR2GRAY)
+        current_frame_gray = cv2.GaussianBlur(current_frame_gray, (21, 21), 0)
 
-        with face_x_lock:
-            if results.detections:
-                for detection in results.detections:
-                    bbox = detection.location_data.relative_bounding_box
-                    face_x_coordinate = bbox.xmin + bbox.width / 2
-                    face_y_coordinate = bbox.ymin + bbox.height / 2
+        # Compute the absolute difference between the current frame and the first frame
+        frame_delta = cv2.absdiff(first_frame_gray, current_frame_gray)
+        
+        # Threshold the delta image to get the regions with motion
+        _, thresh = cv2.threshold(frame_delta, threshold, 255, cv2.THRESH_BINARY)
+
+        # Dilate the thresholded image to fill in holes and find contours
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        with motion_lock:
+            # If motion is detected, find the largest contour and track its centroid
+            if len(contours) > 0:
+                # Find the largest contour by area
+                largest_contour = max(contours, key=cv2.contourArea)
+
+                # Ignore small movements by setting a minimum contour area threshold
+                if cv2.contourArea(largest_contour) > 500:
+                    # Compute the bounding box for the largest contour and track its centroid
+                    (x, y, w, h) = cv2.boundingRect(largest_contour)
+                    motion_x_coordinate = x + w / 2
+                    motion_y_coordinate = y + h / 2
 
                     if debug:
-                        x_min = int(bbox.xmin * webcam_frame.shape[1])
-                        y_min = int(bbox.ymin * webcam_frame.shape[0])
-                        width = int(bbox.width * webcam_frame.shape[1])
-                        height = int(bbox.height * webcam_frame.shape[0])
-                        cv2.rectangle(webcam_frame, (x_min, y_min), (x_min + width, y_min + height), (0, 255, 0), 2)
+                        cv2.rectangle(webcam_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
             else:
-                face_x_coordinate, face_y_coordinate = None, None
+                motion_x_coordinate, motion_y_coordinate = None, None
 
+        # Update the latest frame for the main thread to access
         with frame_lock:
             latest_webcam_frame = webcam_frame.copy()
 
@@ -96,7 +113,7 @@ def load_images(image_dir):
 
 
 def animate_eye(images, num_frames, frame_height, frame_width, background_image_path, enable_y_coords, debug):
-    global face_x_coordinate, face_y_coordinate, latest_webcam_frame
+    global motion_x_coordinate, motion_y_coordinate, latest_webcam_frame
 
     # Load the background image once and resize it to match the frame dimensions
     background_img = cv2.imread(background_image_path, cv2.IMREAD_UNCHANGED)
@@ -115,10 +132,10 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
         current_frame = images[frame_idx]
         frame_idx = (frame_idx + 1) % num_frames
 
-        with face_x_lock:
-            if face_x_coordinate is not None:
-                relative_x_position = face_x_coordinate
-                relative_y_position = face_y_coordinate if enable_y_coords and face_y_coordinate is not None else 0.5
+        with motion_lock:
+            if motion_x_coordinate is not None:
+                relative_x_position = motion_x_coordinate / frame_width
+                relative_y_position = motion_y_coordinate / frame_height if enable_y_coords else 0.5
 
                 move_x = int((0.5 - relative_x_position) * MOVEMENT_SCALE * frame_width)
                 move_y = int((relative_y_position - 0.5) * MOVEMENT_SCALE * frame_height) if enable_y_coords else 0
@@ -167,12 +184,11 @@ def animate_eye(images, num_frames, frame_height, frame_width, background_image_
 
         with frame_lock:
             if debug and (latest_webcam_frame is not None):
-                cv2.imshow('Debug Face Detection', latest_webcam_frame)
+                cv2.imshow('Debug Motion Detection', latest_webcam_frame)
 
         if cv2.waitKey(10) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
             return
-
 
 
 if __name__ == "__main__":
@@ -189,9 +205,9 @@ if __name__ == "__main__":
     num_frames = len(resized_images)
     frame_height, frame_width = 1200, 1920  # Match the resized dimensions
 
-    # Start the face detection thread
-    face_detection_thread = threading.Thread(target=detect_face_position, args=(False,))
-    face_detection_thread.start()
+    # Start the motion detection thread
+    motion_detection_thread = threading.Thread(target=detect_motion_position, args=(False,))
+    motion_detection_thread.start()
 
     # Set up the OpenCV window for fullscreen
     cv2.namedWindow('Animated Eye', cv2.WND_PROP_FULLSCREEN)
@@ -200,4 +216,4 @@ if __name__ == "__main__":
     # Run the animation
     animate_eye(resized_images, num_frames, frame_height, frame_width, background_image_path="eyeball.png", enable_y_coords=True, debug=False)
 
-    face_detection_thread.join()
+    motion_detection_thread.join()
