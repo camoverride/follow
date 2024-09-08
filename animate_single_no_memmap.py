@@ -15,6 +15,15 @@ frame_lock = threading.Lock()
 MOVEMENT_SCALE = 0.8  # Scale factor to exaggerate the background movement
 
 
+def natural_sort_key(s):
+    """
+    Sort filenames that contain numbers in a natural way (e.g., file1, file2, file10)
+    """
+    import re
+    return [int(text) if text.isdigit() else text for text in re.split(r'(\d+)', s)]
+
+
+
 def detect_face_position(debug):
     """
     Set the (x, y) coordinates of the face in order to perform tracking.
