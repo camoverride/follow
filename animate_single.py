@@ -18,7 +18,7 @@ frame_lock = threading.Lock()
 MOVEMENT_SCALE = 0.8  # Scale factor to exaggerate the background movement
 
 
-def detect_face_position(debug=False):
+def detect_face_position(debug=True):
     """
     Set the (x, y) coordinates of the face in order to perform tracking.
 
