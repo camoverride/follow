@@ -248,6 +248,6 @@ if __name__ == "__main__":
                 frame_width,
                 background_image_path="eyeball.png",
                 enable_y_coords=True,
-                debug=True)
+                debug=False)
 
     face_detection_thread.join()
